@@ -14,7 +14,7 @@ def handle_s3(action, params):
     elif action == 'list':
         list_buckets()
     else:
-        print(f"שגיאה: פעולה לא נתמכת: {action}")
+        print(f"error: could not spourt action: {action}")
 
 def create_bucket(params):
     bucket_name = params.get('name')
@@ -23,27 +23,27 @@ def create_bucket(params):
     username = os.getenv("USER") or os.getenv("USERNAME") or "unknown"
 
     if not bucket_name:
-        print("שגיאה: יש לציין --params name=<bucket-name>")
+        print("error: must input --params name=<bucket-name>")
         return
 
     if visibility not in ['private', 'public']:
-        print("שגיאה: visibility חייב להיות 'private' או 'public'")
+        print("error: visibility must be  'private' or 'public'")
         return
 
     if visibility == 'public':
-        confirm = input("אתה בטוח שברצונך ליצור דלי ציבורי? (yes/no): ")
+        confirm = input("are you sure you want to create a public bucket? (yes/no): ")
         if confirm.lower() != 'yes':
-            print("בוטל.")
+            print("undo.")
             return
 
     try:
-        # יצירת הדלי
+        # creating buckets
         s3.create_bucket(
             Bucket=bucket_name,
             CreateBucketConfiguration={'LocationConstraint': region}
         )
 
-        # תיוג
+        # tags
         tagging = s3_resource.BucketTagging(bucket_name)
         tagging.put(Tagging={
             'TagSet': [
@@ -52,7 +52,7 @@ def create_bucket(params):
             ]
         })
 
-        # הגדרת public policy אם רלוונטי
+        #  public policy
         if visibility == 'public':
             policy = {
                 "Version": "2012-10-17",
@@ -66,31 +66,31 @@ def create_bucket(params):
             }
             s3.put_bucket_policy(Bucket=bucket_name, Policy=json.dumps(policy))
 
-        print(f"דלי נוצר בהצלחה: {bucket_name}")
+        print(f"bucket created: {bucket_name}")
 
     except ClientError as e:
-        print(f"שגיאה ביצירת דלי: {e}")
+        print(f"error making bucket: {e}")
 
 def upload_file(params):
     bucket = params.get('bucket')
     file_path = params.get('file')
 
     if not bucket or not file_path:
-        print("שגיאה: יש לציין --params bucket=<name> file=<path>")
+        print("error: must input: --params bucket=<name> file=<path>")
         return
 
-    # בדוק אם הדלי הוא CLI
+    # check if the bucket was created using CLI
     if not is_cli_bucket(bucket):
-        print("שגיאה: ניתן להעלות קבצים רק לדליים שנוצרו על ידי CLI.")
+        print("error: can only upload what was created in CLI.")
         return
 
     file_name = os.path.basename(file_path)
 
     try:
         s3.upload_file(file_path, bucket, file_name)
-        print(f"✅ הקובץ הועלה: {file_name} → {bucket}")
+        print(f"✅ file uploaded: {file_name} → {bucket}")
     except ClientError as e:
-        print(f"שגיאה בהעלאת קובץ: {e}")
+        print(f"error uploading files: {e}")
 
 def list_buckets():
     try:
@@ -101,7 +101,7 @@ def list_buckets():
             if tags.get('CreatedBy') == 'platform-cli':
                 print(f"🪣 {name}")
     except ClientError as e:
-        print(f"שגיאה בשליפת רשימת דליים: {e}")
+        print(f"error could not find the buckets list: {e}")
 
 def get_bucket_tags(bucket_name):
     try:

@@ -15,11 +15,11 @@ def get_latest_ami(os_name='ubuntu'):
     elif os_name == 'amazonlinux':
         param_name = '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
     else:
-        raise ValueError("מערכת הפעלה לא נתמכת")
+        raise ValueError("action not sported")
 
     try:
         response = ssm.get_parameter(Name=param_name)
         return response['Parameter']['Value']
     except Exception as e:
-        print(f"שגיאה בשליפת AMI: {e}")
+        print(f"error finding AMI: {e}")
         return None

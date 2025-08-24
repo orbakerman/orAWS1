@@ -13,14 +13,14 @@ def handle_route53(action, params):
     elif action == 'delete':
         delete_record(params)
     else:
-        print(f"שגיאה: פעולה לא נתמכת - {action}")
+        print(f"error: action not spurrted - {action}")
 
 def create_zone(params):
     domain = params.get('domain')
     username = os.getenv("USER") or os.getenv("USERNAME") or "unknown"
 
     if not domain:
-        print("שגיאה: חובה לציין --params domain=example.com")
+        print("error: most input --params domain=example.com")
         return
 
     try:
@@ -36,9 +36,9 @@ def create_zone(params):
                 {'Key': 'Owner', 'Value': username}
             ]
         )
-        print(f"✅ אזור DNS נוצר: {domain}")
+        print(f"✅ zone DNS created: {domain}")
     except Exception as e:
-        print(f"שגיאה ביצירת Hosted Zone: {e}")
+        print(f"error creating Hosted Zone: {e}")
 
 def list_zones():
     try:
@@ -47,9 +47,9 @@ def list_zones():
             zone_id = zone['Id'].split('/')[-1]
             tags = get_zone_tags(zone_id)
             if tags.get('CreatedBy') == 'platform-cli':
-                print(f"🌐 {zone['Name']} (ID: {zone_id})")
+                print(f" {zone['Name']} (ID: {zone_id})")
     except Exception as e:
-        print(f"שגיאה בשליפת אזורים: {e}")
+        print(f"error finding zones: {e}")
 
 def get_zone_tags(zone_id):
     try:
@@ -68,11 +68,11 @@ def upsert_record(params):
     record_value = params.get('value')
 
     if not zone_id or not record_name or not record_value:
-        print("שגיאה: חובה לציין --params zone_id=... name=... value=...")
+        print("error: must input:  --params zone_id=... name=... value=...")
         return
 
     if not is_cli_zone(zone_id):
-        print("שגיאה: ניתן לערוך רק אזורים שנוצרו על ידי CLI.")
+        print("error: can only chanage ressurces created in CLI.")
         return
 
     try:
@@ -93,9 +93,9 @@ def upsert_record(params):
                 ]
             }
         )
-        print(f"✅ רשומה עודכנה/נוצרה: {record_name} → {record_value}")
+        print(f": list created {record_name} → {record_value}")
     except Exception as e:
-        print(f"שגיאה ביצירת רשומה: {e}")
+        print(f"error creating a list: {e}")
 
 def delete_record(params):
     zone_id = params.get('zone_id')
@@ -108,7 +108,7 @@ def delete_record(params):
         return
 
     if not is_cli_zone(zone_id):
-        print("שגיאה: ניתן למחוק רק רשומות מאזור שנוצר על ידי CLI.")
+        print("error: can only delete from resurces created from CLI.")
         return
 
     try:
@@ -129,9 +129,9 @@ def delete_record(params):
                 ]
             }
         )
-        print(f"🗑️ רשומה נמחקה: {record_name}")
+        print(f"deleted: {record_name}")
     except Exception as e:
-        print(f"שגיאה במחיקת רשומה: {e}")
+        print(f"error could not be deleted: {e}")
 
 def is_cli_zone(zone_id):
     tags = get_zone_tags(zone_id)

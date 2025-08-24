@@ -6,7 +6,7 @@ from route53_manager import handle_route53
 
 @click.group()
 def cli():
-    """platform-cli: כלי לניהול משאבי AWS (EC2, S3, Route53)"""
+    """platform-cli: resurs managemant AWS (EC2, S3, Route53)"""
     pass
 
 
@@ -15,7 +15,7 @@ def cli():
 @click.argument('action', type=str)
 @click.option('--params', '-p', multiple=True, help='פרמטרים לפעולה (key=value)')
 def run(resource, action, params):
-    """ניהול משאבים: EC2, S3, Route53"""
+    """resuress: EC2, S3, Route53"""
     param_dict = dict(p.split('=') for p in params)
 
     if resource == 'ec2':

@@ -16,25 +16,25 @@ def handle_ec2(action, params):
     elif action == 'stop':
         stop_instance(params)
     else:
-        print(f"פעולה לא נתמכת: {action}")
+        print(f"not spourted action: {action}")
 
 def create_instance(params):
     username = os.getenv("USER") or os.getenv("USERNAME")
     instance_type = params.get('type', 't3.micro')
 
     if instance_type not in ['t3.micro', 't2.small']:
-        print("שגיאה: ניתן ליצור רק t3.micro או t2.small.")
+        print("error: you can only create t3.micro or t2.small.")
         return
 
-    # בדיקה האם יש כבר 2 אינסטנסים פעילים מה-CLI
+    # checking instances count
     running = get_cli_instances(state='running')
     if len(running) >= 2:
-        print("שגיאה: ניתן להפעיל רק עד 2 אינסטנסים דרך ה-CLI.")
+        print("error: max of 2 instances CLI.")
         return
 
     ami_id = get_latest_ami(params.get('ami', 'ubuntu'))
 
-    print(f"משתמש ב-AMI: {ami_id}")
+    print(f"user of AMI: {ami_id}")
 
     try:
         instances = ec2.create_instances(
@@ -51,9 +51,9 @@ def create_instance(params):
             }]
         )
         instance = instances[0]
-        print(f"אינסטנס נוצר: {instance.id}")
+        print(f"instance created: {instance.id}")
     except ClientError as e:
-        print(f"שגיאת AWS: {e}")
+        print(f"error AWS: {e}")
 
 def list_instances():
     instances = get_cli_instances()
@@ -65,9 +65,9 @@ def start_instance(params):
     inst = ec2.Instance(instance_id)
     if is_cli_instance(inst):
         inst.start()
-        print(f"האינסטנס {instance_id} הופעל.")
+        print(f"instance {instance_id} started.")
     else:
-        print("שגיאה: רק אינסטנסים עם תג 'CreatedBy=platform-cli' נתמכים.")
+        print("error: only instances sporrted 'CreatedBy=platform-cli' .")
 
 def stop_instance(params):
     instance_id = params.get('id')

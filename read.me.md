@@ -7,6 +7,8 @@ To run `platform-cli` on an EC2 instance (e.g., for testing or automation):
   - IAM role attached with necessary permissions.
   - Inbound SSH access (for setup, if needed).
   - Python 3.8+ installed (or install it manually).
+  - pip
+  - AWS CLI
 
 # 2. SSH Into the Instance
 

@@ -54,7 +54,31 @@ Designed for developer use, with built-in security constraints and guardrails.
   - S3 (create/manage buckets)
   - Route53 (read/write DNS records)
   - SSM (optional: for session manager or parameter store)
+  
+#you can use the next script as a bash file inorder to install the requirememts
+# name: setup-platform-cli.sh
 
+set -e
+
+echo " Updating system..."
+sudo yum update -y
+
+echo " Installing dependencies: git, Python 3, pip..."
+sudo yum install -y git python3-pip
+pip3 install --upgrade pip
+
+echo " Cloning platform-cli repository..."
+# enter you repo
+GIT_REPO="<url-of-your-repo>"
+git clone "$GIT_REPO"
+cd platform-cli
+
+echo " Installing Python dependencies..."
+pip3 install -r requirements.txt
+pip3 install -r dev-requirements.txt
+
+echo " Platform CLI ready to use."
+echo " Don't forget to run 'aws configure' before using the CLI
 
 # Run unit tests
 pytest

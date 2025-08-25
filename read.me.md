@@ -68,6 +68,7 @@ sudo yum install -y git python3-pip
 pip3 install --upgrade pip
 
 echo " Cloning platform-cli repository..."
+
 # enter you repo
 GIT_REPO="<url-of-your-repo>"
 git clone "$GIT_REPO"

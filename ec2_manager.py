@@ -1,74 +1,47 @@
 import boto3
-import os
-from botocore.exceptions import ClientError
-from utils import get_latest_ami, get_cli_instances, tag_resource
+import click
 
-ec2 = boto3.resource('ec2')
-client = boto3.client('ec2')
+ec2 = boto3.client('ec2')
 
-def handle_ec2(action, params):
-    if action == 'create':
-        create_instance(params)
-    elif action == 'list':
-        list_instances()
-    elif action == 'start':
-        start_instance(params)
-    elif action == 'stop':
-        stop_instance(params)
-    else:
-        print(f"not spourted action: {action}")
+@click.group()
+def ec2_group():
+    """Manage EC2 instances"""
+    pass
 
-def create_instance(params):
-    username = os.getenv("USER") or os.getenv("USERNAME")
-    instance_type = params.get('type', 't3.micro')
-
-    if instance_type not in ['t3.micro', 't2.small']:
-        print("error: you can only create t3.micro or t2.small.")
-        return
-
-    # checking instances count
-    running = get_cli_instances(state='running')
-    if len(running) >= 2:
-        print("error: max of 2 instances CLI.")
-        return
-
-    ami_id = get_latest_ami(params.get('ami', 'ubuntu'))
-
-    print(f"user of AMI: {ami_id}")
-
+@ec2_group.command('start')
+@click.option('--ami', required=True, help='AMI ID to launch')
+@click.option('--instance-type', default='t2.micro', help='EC2 instance type')
+@click.option('--key-name', required=True, help='Key pair name')
+@click.option('--security-group', required=True, help='Security group name')
+def start_instance(ami, instance_type, key_name, security_group):
+    """Start an EC2 instance"""
     try:
-        instances = ec2.create_instances(
-            ImageId=ami_id,
+        response = ec2.run_instances(
+            ImageId=ami,
             MinCount=1,
             MaxCount=1,
             InstanceType=instance_type,
-            TagSpecifications=[{
-                'ResourceType': 'instance',
-                'Tags': [
-                    {'Key': 'CreatedBy', 'Value': 'platform-cli'},
-                    {'Key': 'Owner', 'Value': username or 'unknown'}
-                ]
-            }]
+            KeyName=key_name,
+            SecurityGroups=[security_group]
         )
-        instance = instances[0]
-        print(f"instance created: {instance.id}")
-    except ClientError as e:
-        print(f"error AWS: {e}")
+        instance_id = response['Instances'][0]['InstanceId']
+        click.echo(f"EC2 instance started: {instance_id}")
+    except Exception as e:
+        click.echo(f"Error launching EC2 instance: {e}")
 
+@ec2_group.command('list')
 def list_instances():
-    instances = get_cli_instances()
-    for inst in instances:
-        print(f"{inst.id} - {inst.state['Name']} - {inst.instance_type}")
-
-def start_instance(params):
-    instance_id = params.get('id')
-    inst = ec2.Instance(instance_id)
-    if is_cli_instance(inst):
-        inst.start()
-        print(f"instance {instance_id} started.")
-    else:
-        print("error: only instances sporrted 'CreatedBy=platform-cli' .")
-
-def stop_instance(params):
-    instance_id = params.get('id')
-    i
+    """List all EC2 instances"""
+    try:
+        response = ec2.describe_instances()
+        reservations = response['Reservations']
+        if not reservations:
+            click.echo("No EC2 instances found.")
+            return
+        for reservation in reservations:
+            for instance in reservation['Instances']:
+                state = instance['State']['Name']
+                instance_id = instance['InstanceId']
+                click.echo(f"Instance ID: {instance_id}, State: {state}")
+    except Exception as e:
+        click.echo(f"Error listing EC2 instances: {e}")

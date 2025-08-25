@@ -1,9 +1,36 @@
+To run `platform-cli` on an EC2 instance (e.g., for testing or automation):
+
+#1. Launch EC2 Instance
+
+- Launch an Amazon Linux 2 or Ubuntu EC2 instance.
+- Make sure it has:
+  - IAM role attached with necessary permissions.
+  - Inbound SSH access (for setup, if needed).
+  - Python 3.8+ installed (or install it manually).
+
+# 2. SSH Into the Instance
+
+```bash
+ssh -i <your-key.pem> ec2-user@<ec2-public-ip
+
+git clone <url-of-your-repo>
+cd platform-cli
+
+#install updates
+sudo yum update -y  # (or apt-get update)
+pip3 install -r requirements.txt
+pip3 install -r dev-requirements.txt
+sudo yum install python3-pip -y  # For Amazon Linux
+
+#login
+aws configure
+
+
 # platform-cli
 
 A command-line tool (CLI) for managing AWS resources including EC2, S3, and Route53.
 Designed for developer use, with built-in security constraints and guardrails.
 
----
 
 # Features
 
@@ -15,9 +42,8 @@ Designed for developer use, with built-in security constraints and guardrails.
   - `CreatedBy=platform-cli`
   - `Owner=<your-username>`
 
----
 
-##  Prerequisites
+# Prerequisites
 
 - Python 3.8 or higher
 - AWS CLI installed and configured (`aws configure` or named profile)
@@ -27,17 +53,6 @@ Designed for developer use, with built-in security constraints and guardrails.
   - Route53 (read/write DNS records)
   - SSM (optional: for session manager or parameter store)
 
----
-
-## ⚙ Installation
-
-```bash
-git clone <url-of-your-repo>
-cd platform-cli
-pip install -r requirements.txt
-
-# Install dev dependencies
-pip install -r dev-requirements.txt
 
 # Run unit tests
 pytest
